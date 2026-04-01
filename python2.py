@@ -1357,13 +1357,65 @@ max_idx = nums.index(max_val)
 print(f"Greatest = {max_val} at index {max_idx}")
 
 # Q4: Find second greatest
-nums = [3, 7, 1, 9, 4]
-nums_sorted = sorted(set(nums), reverse=True)
-print(f"Second greatest = {nums_sorted[1]}")
+
+nums = [3, 7, 1, 9, 4]                     # original list of numbers
+
+nums_sorted = sorted(set(nums), reverse=True)  
+# set(nums) → removes duplicates (if any)
+# sorted(...) → sorts the numbers
+# reverse=True → sorts in descending order (largest → smallest)
+# result → [9, 7, 4, 3, 1]
+
+print(f"Second greatest = {nums_sorted[1]}")  
+# nums_sorted[1] → second element in sorted list
+# index 0 → largest (9)
+# index 1 → second largest (7)
+# prints → Second greatest = 7
+
+'''
+def find_largest_and_second(arr):
+    largest = float('-inf')      # initialize largest as smallest possible number
+    second = float('-inf')       # initialize second largest also as smallest
+
+    for num in arr:              # loop through each number in the list
+        
+        if num > largest:        # if current number is greater than largest
+            second = largest     # old largest becomes second largest
+            largest = num        # update largest to current number
+        
+        elif num > second and num != largest:  
+            # if number is:
+            # 1. greater than second largest
+            # 2. NOT equal to largest (to avoid duplicates)
+            second = num         # update second largest
+
+    return largest, second       # return both values
+
+
+# Example input
+arr = [10, 5, 20, 8, 20, 15]
+
+result = find_largest_and_second(arr)  # call function
+print(result)                          # print result
+'''
 
 # Q5: Check if list is sorted
 nums = [1, 2, 3, 4, 5]
 print(nums == sorted(nums))   # True if already sorted
+
+
+'''def is_sorted(nums):
+    for i in range(len(nums) - 1):          # loop till second last element
+        if nums[i] > nums[i + 1]:           # if current > next → not sorted
+            return False                   # immediately return False
+    return True                            # if no violation → sorted
+
+
+# Example
+nums = [1, 2, 3, 4, 5]
+print(is_sorted(nums))                     # True
+'''
+
 
 # INTERVIEW QUESTIONS:
 # Q1: What is the difference between list and tuple?
@@ -1414,9 +1466,90 @@ cnt = t.count(5)     # counts occurrences of 5
 # 3. Can be used as dictionary keys (list cannot — list is unhashable)
 # 4. Good for returning multiple values from function
 
+
+# =========================================
+# 1. TWO WAYS TO TRAVERSE A TUPLE
+# =========================================
+
+# --------- METHOD 1: Direct Traversal ---------
+# We directly iterate over elements
+t = (5, 2, 9, 1, 5, 6)
+for item in t:
+    # item will contain each element one by one
+    print(item)
+
+# Example output:
+# 5 2 9 1 5 6
+
+
+# --------- METHOD 2: Index-Based Traversal ---------
+# We use index positions (like arrays)
+
+for i in range(len(t)):
+    # t[i] accesses element at index i
+    print(t[i])
+
+# Example output:
+# 5 2 9 1 5 6
+
+
+# =========================================
+# 2. IMMUTABILITY (VERY IMPORTANT)
+# =========================================
+
+# Tuples cannot be modified after creation
+
+# t[0] = 100   # ❌ ERROR
+# Reason: tuple does not support item assignment
+
+
+# =========================================
+# 3. TUPLE METHODS (ONLY 2 IMPORTANT ONES)
+# =========================================
+
+# --------- METHOD 1: index() ---------
+# Finds FIRST occurrence of element
+
+index_of_9 = t.index(9)
+print(index_of_9)   # Output: 2
+
+# If element not found → gives error
+
+
+# --------- METHOD 2: count() ---------
+# Counts how many times element appears
+
+count_of_5 = t.count(5)
+print(count_of_5)   # Output: 2
+
+
+# =========================================
+# 4. WHAT TUPLE DOES NOT SUPPORT
+# =========================================
+
+# t.append(10)    # ❌ Not allowed
+# t.remove(5)     # ❌ Not allowed
+# t.sort()        # ❌ Not allowed
+
+# Reason: tuple is immutable
+
+
+# =========================================
+# 5. WHY USE TUPLE (INTERVIEW POINT)
+# =========================================
+
+# - Faster than list (less overhead)
+# - Safe (data cannot be changed accidentally)
+# - Used when values are fixed (like coordinates)
+
+
+
+
 # TUPLE PACKING AND UNPACKING:
 coordinates = (10, 20, 30)   # packing
 x, y, z = coordinates        # unpacking → x=10, y=20, z=30
+
+
 
 # INTERVIEW QUESTIONS:
 # Q1: Can you change a tuple after creation?
