@@ -1586,7 +1586,7 @@ s3 = set()              # empty set — MUST use set(), not {} (that's dict!)
 # That hash number is used as memory index
 # Since hash doesn't maintain order → set is UNORDERED
 # Mutable objects (list, dict) can't be hashed → can't be stored in set
-
+ 
 # SET TRAVERSAL:
 # Cannot use index! (unordered)
 for item in s:
@@ -1717,6 +1717,102 @@ d2 = {"c": 3, "d": 4}
 merged = {**d1, **d2}   # unpacking operator
 print(merged)            # {"a":1, "b":2, "c":3, "d":4}
 
+# =========================================
+# MERGING DICTIONARIES IN PYTHON
+# =========================================
+
+# Given:
+d1 = {10: 100, 20: 200, 30: 300}
+d2 = {40: 400, 50: 500, 60: 600}
+
+
+# =========================================
+# METHOD 1: USING LOOP (MANUAL MERGE)
+# =========================================
+
+# Traverse d2 and insert into d1
+
+for i in d2:
+    d1[i] = d2[i]   # adding key-value pair into d1
+
+print(d1)
+
+# OUTPUT:
+# {10:100, 20:200, 30:300, 40:400, 50:500, 60:600}
+
+# EXPLANATION:
+# - Loop runs over keys of d2
+# - Each key-value is added to d1
+# - If key already exists → value gets overwritten
+
+
+# =========================================
+# METHOD 2: USING UNPACKING (**)
+# =========================================
+
+d1 = {"a": 1, "b": 2}
+d2 = {"c": 3, "d": 4}
+
+merged = {**d1, **d2}
+
+print(merged)
+
+# OUTPUT:
+# {'a':1, 'b':2, 'c':3, 'd':4}
+
+# EXPLANATION:
+# - ** unpacks key-value pairs
+# - Creates NEW dictionary (does NOT modify original)
+
+
+# =========================================
+# IMPORTANT DIFFERENCE
+# =========================================
+
+# LOOP METHOD:
+# - Modifies original dictionary (d1 changes)
+
+# UNPACKING METHOD:
+# - Creates NEW dictionary (safe approach)
+
+
+# =========================================
+# INTERVIEW EDGE CASE (VERY IMPORTANT)
+# =========================================
+
+d1 = {"a": 1, "b": 2}
+d2 = {"b": 100, "c": 3}
+
+merged = {**d1, **d2}
+
+print(merged)
+
+# OUTPUT:
+# {'a':1, 'b':100, 'c':3}
+
+# RULE:
+# - If same key exists → RIGHT SIDE wins (**d2 overwrites d1)
+
+
+# =========================================
+# BONUS: USING update()
+# =========================================
+
+d1 = {"a": 1, "b": 2}
+d2 = {"c": 3}
+
+d1.update(d2)   # modifies d1
+
+print(d1)
+
+# OUTPUT:
+# {'a':1, 'b':2, 'c':3}
+
+# NOTE:
+# - update() also overwrites existing keys
+
+
+
 # Q2: Sum all values in dictionary
 sales = {"jan": 100, "feb": 200, "mar": 150}
 total = sum(sales.values())
@@ -1740,6 +1836,69 @@ for key in set(d1) | set(d2):
     result[key] = d1.get(key, 0) + d2.get(key, 0)
 print(result)
 
+
+
+# =========================================
+# PROBLEM:
+# MERGE TWO DICTIONARIES
+# - If key is SAME → ADD values
+# - If key is NEW → just insert
+# =========================================
+
+
+# =========================================
+# METHOD 1: USING LOOP + IF (YOUR LEFT CODE)
+# =========================================
+
+d1 = {10: 100, 20: 200, 40: 300}
+d2 = {40: 400, 50: 500, 60: 600}
+
+for i in d2:
+    # Check if key already exists in d1
+    if i in d1.keys():
+        # If exists → add values
+        d1[i] += d2[i]
+    else:
+        # If not → insert new key
+        d1[i] = d2[i]
+
+print(d1)
+
+# OUTPUT:
+# {10:100, 20:200, 40:700, 50:500, 60:600}
+
+# EXPLANATION:
+# - 40 exists in both → 300 + 400 = 700
+# - Others are simply added
+
+
+# =========================================
+# METHOD 2: USING set + get() (BEST METHOD)
+# =========================================
+
+d1 = {"a": 1, "b": 2, "c": 3}
+d2 = {"b": 4, "c": 1, "d": 5}
+
+result = {}
+
+# Combine all keys using set union
+for key in set(d1) | set(d2):
+    
+    # get(key, 0) → returns value if exists, else 0
+    result[key] = d1.get(key, 0) + d2.get(key, 0)
+
+print(result)
+
+# OUTPUT:
+# {'a':1, 'b':6, 'c':4, 'd':5}
+
+# EXPLANATION:
+# - set(d1) | set(d2) → all unique keys
+# - get(key, 0) avoids KeyError
+
+
+
+
 # INTERVIEW QUESTIONS:
 # Q1: What is the difference between list and dictionary?
 # A: List uses integer index (0,1,2...), dict uses custom keys
@@ -1756,6 +1915,166 @@ print(result)
 # Q4: Can two keys have the same name in a dict?
 # A: No — duplicate key overwrites previous value
 #    d = {"a": 1, "a": 2} → {"a": 2}
+
+
+
+
+
+# =========================================
+# SHALLOW COPY vs DEEP COPY (PYTHON)
+# =========================================
+
+# -----------------------------------------
+# CONCEPT (VERY IMPORTANT)
+# -----------------------------------------
+
+# SHALLOW COPY:
+# - Creates a new outer object
+# - BUT inner objects (nested) are still REFERENCED
+# - Changes in nested elements affect original
+
+# DEEP COPY:
+# - Creates completely independent copy
+# - BOTH outer + inner objects are copied
+# - No effect on original
+
+
+# =========================================
+# 1. SHALLOW COPY WITH LIST
+# =========================================
+
+import copy
+
+original_list = [1, 2, [3, 4]]
+
+# Creating shallow copy
+shallow_list = copy.copy(original_list)
+
+# Modify outer element
+shallow_list[0] = 100
+
+# Modify inner element (nested list)
+shallow_list[2][0] = 999
+
+print("Original:", original_list)
+print("Shallow :", shallow_list)
+
+# OUTPUT:
+# Original: [1, 2, [999, 4]]
+# Shallow : [100, 2, [999, 4]]
+
+# EXPLANATION:
+# - outer change (index 0) → does NOT affect original
+# - inner change (nested list) → DOES affect original
+
+
+# =========================================
+# 2. DEEP COPY WITH LIST
+# =========================================
+
+original_list = [1, 2, [3, 4]]
+
+# Creating deep copy
+deep_list = copy.deepcopy(original_list)
+
+# Modify inner element
+deep_list[2][0] = 999
+
+print("Original:", original_list)
+print("Deep    :", deep_list)
+
+# OUTPUT:
+# Original: [1, 2, [3, 4]]
+# Deep    : [1, 2, [999, 4]]
+
+# EXPLANATION:
+# - Inner change does NOT affect original
+
+
+# =========================================
+# 3. SHALLOW COPY WITH DICTIONARY
+# =========================================
+
+original_dict = {
+    "name": "Rahul",
+    "marks": [80, 90]
+}
+
+# Shallow copy
+shallow_dict = copy.copy(original_dict)
+
+# Modify nested list
+shallow_dict["marks"][0] = 100
+
+print("Original:", original_dict)
+print("Shallow :", shallow_dict)
+
+# OUTPUT:
+# Original: {'name': 'Rahul', 'marks': [100, 90]}
+# Shallow : {'name': 'Rahul', 'marks': [100, 90]}
+
+# EXPLANATION:
+# - Nested list is shared → both changed
+
+
+# =========================================
+# 4. DEEP COPY WITH DICTIONARY
+# =========================================
+
+original_dict = {
+    "name": "Rahul",
+    "marks": [80, 90]
+}
+
+# Deep copy
+deep_dict = copy.deepcopy(original_dict)
+
+# Modify nested list
+deep_dict["marks"][0] = 100
+
+print("Original:", original_dict)
+print("Deep    :", deep_dict)
+
+# OUTPUT:
+# Original: {'name': 'Rahul', 'marks': [80, 90]}
+# Deep    : {'name': 'Rahul', 'marks': [100, 90]}
+
+# EXPLANATION:
+# - Fully independent copy
+
+
+# =========================================
+# 5. SHORT INTERVIEW SUMMARY
+# =========================================
+
+# SHALLOW COPY:
+# - copy.copy()
+# - Copies outer object only
+# - Inner objects are shared
+
+# DEEP COPY:
+# - copy.deepcopy()
+# - Copies everything recursively
+# - Fully independent
+
+# =========================================
+# 6. TRICK QUESTION (IMPORTANT)
+# =========================================
+
+# Simple assignment is NOT copy
+
+a = [1, 2, 3]
+b = a   # ❌ NOT COPY, just reference
+
+b[0] = 100
+
+print(a)  # [100, 2, 3]
+
+# Both point to SAME object in memory
+
+
+
+
 
 
 # ============================================================
@@ -1831,6 +2150,162 @@ try:
 except ValueError as e:
     print(e)   # "Age cannot be negative!"
 
+
+
+
+# ============================================================
+# ADDITIONAL IMPORTANT POINTS (ADVANCED + INTERVIEW EDGE)
+# ============================================================
+
+# 1. MULTIPLE EXCEPT IN ONE LINE (TUPLE FORM)
+
+try:
+    x = int("abc")
+except (ValueError, TypeError):
+    print("Handled multiple exceptions together")
+
+# Useful when handling similar-type errors
+
+
+# ============================================================
+
+# 2. FINALLY WITH RETURN (TRICKY INTERVIEW CASE)
+
+def test():
+    try:
+        return 1
+    finally:
+        return 2
+
+print(test())
+
+# OUTPUT: 2
+
+# IMPORTANT:
+# finally OVERRIDES return from try → VERY TRICKY QUESTION
+
+
+# ============================================================
+
+# 3. ELSE BLOCK (OFTEN IGNORED)
+
+try:
+    x = 10 / 2
+except ZeroDivisionError:
+    print("Error")
+else:
+    print("No exception occurred")
+
+# Runs ONLY if no exception → keeps code clean
+
+
+# ============================================================
+
+# 4. CUSTOM EXCEPTION (VERY IMPORTANT FOR INTERVIEWS)
+
+class InvalidAgeError(Exception):
+    pass
+
+def check_age(age):
+    if age < 18:
+        raise InvalidAgeError("Underage!")
+
+try:
+    check_age(16)
+except InvalidAgeError as e:
+    print(e)
+
+# Used in real-world projects
+
+
+# ============================================================
+
+# 5. ASSERT (DEBUGGING PURPOSE)
+
+x = 5
+assert x > 0   # passes
+
+# assert x < 0   # ❌ AssertionError
+
+# Used for debugging conditions (not for production validation)
+
+
+# ============================================================
+
+# 6. WITH STATEMENT (CONTEXT MANAGER)
+
+# Automatically handles resource cleanup
+
+with open("file.txt", "w") as f:
+    f.write("Hello")
+
+# No need to manually close file
+# Internally uses try-finally
+
+
+# ============================================================
+
+# 7. EXCEPTION CHAINING (ADVANCED)
+
+try:
+    try:
+        x = int("abc")
+    except ValueError as e:
+        raise RuntimeError("Conversion failed") from e
+except RuntimeError as e:
+    print(e)
+
+# Preserves original exception cause
+
+
+# ============================================================
+
+# 8. DIFFERENCE: raise vs print
+
+# raise → stops program and throws error
+# print → just displays message, program continues
+
+# Interview tip: always use raise for validation errors
+
+
+# ============================================================
+
+# 9. CLEAN CODING PRACTICE
+
+# ❌ BAD
+try:
+    x = 10 / 0
+except:
+    pass   # hides error (very dangerous)
+
+# ✅ GOOD
+try:
+    x = 10 / 0
+except ZeroDivisionError as e:
+    print(e)
+
+
+# ============================================================
+
+# 10. WHEN NOT TO USE EXCEPTION HANDLING
+
+# Do NOT use exceptions for normal logic
+
+# ❌ BAD
+try:
+    if x == 5:
+        raise Exception
+except:
+    print("x is 5")
+
+# ✅ GOOD
+if x == 5:
+    print("x is 5")
+
+
+
+
+    
 # COMMON PYTHON EXCEPTIONS:
 # ValueError          → wrong value (int("hello"))
 # TypeError           → wrong type ("hello" + 5)
