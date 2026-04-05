@@ -2374,7 +2374,7 @@ with open("output.txt", "w") as f:
     f.write("Hello World\n")
     f.write("Python is great\n")
 # "w" mode → overwrites entire file if it already exists
-
+ 
 # APPENDING TO A FILE:
 with open("output.txt", "a") as f:
     f.write("New line added\n")
@@ -2551,6 +2551,98 @@ class MyClass:
 # DECORATOR = @ symbol before function
 # Modifies behavior of the function
 # @classmethod and @staticmethod are built-in decorators
+
+
+
+# ============================================================
+# STATIC METHOD vs CLASS METHOD vs INSTANCE METHOD
+# ============================================================
+
+class Student:
+
+    # CLASS VARIABLE (shared by all objects)
+    school_name = "ABC School"
+
+
+    # --------------------------------------------------------
+    # CONSTRUCTOR (INSTANCE VARIABLES)
+    # --------------------------------------------------------
+    def __init__(self, name, marks):
+        self.name = name        # instance variable
+        self.marks = marks      # instance variable
+
+
+    # --------------------------------------------------------
+    # 1. INSTANCE METHOD
+    # --------------------------------------------------------
+    # Works with object data (self)
+    def display(self):
+        print(f"Name: {self.name}, Marks: {self.marks}")
+
+
+    # --------------------------------------------------------
+    # 2. CLASS METHOD
+    # --------------------------------------------------------
+    # Works with class variables (cls)
+    @classmethod
+    def change_school(cls, new_name):
+        cls.school_name = new_name   # modifies class variable
+
+
+    # --------------------------------------------------------
+    # 3. STATIC METHOD
+    # --------------------------------------------------------
+    # No self, no cls → independent utility function
+    @staticmethod
+    def is_pass(marks):
+        return marks >= 40
+
+
+# ============================================================
+# USING THE METHODS
+# ============================================================
+
+# Creating object
+s1 = Student("Rahul", 75)
+
+# INSTANCE METHOD CALL
+s1.display()
+# Output: Name: Rahul, Marks: 75
+
+
+# CLASS METHOD CALL
+Student.change_school("XYZ School")
+
+print(Student.school_name)
+# Output: XYZ School
+
+
+# STATIC METHOD CALL
+result = Student.is_pass(75)
+print(result)
+# Output: True
+
+
+# ============================================================
+# KEY DIFFERENCE SUMMARY
+# ============================================================
+
+# INSTANCE METHOD:
+# - Uses: self
+# - Works on: object data
+# - Called by: object (s1.display())
+
+# CLASS METHOD:
+# - Uses: cls
+# - Works on: class data
+# - Called by: class (Student.change_school())
+
+# STATIC METHOD:
+# - No self, no cls
+# - Utility/helper function
+# - Called by: class or object
+
+
 
 
 # ===== INHERITANCE =====

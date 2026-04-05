@@ -255,6 +255,8 @@ if check == 4:
 # path.rename(new)    → renames/moves the file
 # path.stat().st_size → file size in bytes
 
+
+
 # open(p, 'w')        → write mode  (creates/overwrites)
 # open(p, 'r')        → read mode   (file must exist)
 # open(p, 'a')        → append mode (adds to end)
