@@ -2640,7 +2640,7 @@ print(result)
 # STATIC METHOD:
 # - No self, no cls
 # - Utility/helper function
-# - Called by: class or object
+# - Called by: class or object 
 
 
 
@@ -2757,6 +2757,9 @@ class Cat(Animal):
 animals = [Dog(), Cat()]
 for a in animals:
     a.sound()   # Dog barks, Cat meows — same method, different behavior
+    # animals = [Dog(), Cat()] creates two objects (one Dog and one Cat) and stores them in a list; since both 
+    # classes inherit from Animal and have a sound() method, we can loop through this list and call a.sound()
+    #  without worrying about the object type, and Python will automatically call the correct method (Dog.sound() or Cat.sound()) at runtime — this is called polymorphism.
 
 # 2. DUCK TYPING:
 # "If it walks like a duck and quacks like a duck, it's a duck"
@@ -2774,44 +2777,353 @@ make_talk(Duck())   # Quack!
 make_talk(Human())  # Hello!
 
 
-# ===== ENCAPSULATION =====
+# ============================================================
+# ENCAPSULATION IN PYTHON
+# Access Modifiers + Name Mangling + Inheritance
+# ============================================================
 
+
+# ============================================================
 # WHAT IS ENCAPSULATION?
-# 1. Bundling data (attributes) + behavior (methods) into one class
-# 2. Hiding internal details (access control)
-# Benefits: data safety, clean code, controlled access
+# ============================================================
 
-# ACCESS MODIFIERS IN PYTHON (3 types):
+# Two main ideas:
+# 1. BUNDLING   → data (attributes) + behavior (methods) in one class
+# 2. HIDING     → restrict access to internal details
 
-# 1. PUBLIC: default — accessible everywhere
-self.name = "Public"          # no prefix
+# Benefits:
+# Data safety   → no accidental changes from outside
+# Clean code    → organized structure
+# Controlled    → you decide what's accessible and what's not
 
-# 2. PROTECTED: single underscore prefix _
-self._age = 21                # convention: "don't access outside class"
-# Python doesn't enforce this — it's just a WARNING to other developers
+# Real world analogy:
+# ATM machine → you can withdraw money (public method)
+# But you CANNOT access the internal cash counting mechanism (private)
+# The internal logic is hidden — only the interface is exposed
 
-# 3. PRIVATE: double underscore prefix __
-self.__salary = 50000         # truly restricted — name mangling applied
-# obj.__salary → AttributeError!
-# Actual name becomes: obj._ClassName__salary (name mangling)
 
-class Demo:
+# ============================================================
+# ACCESS MODIFIERS — 3 TYPES
+# ============================================================
+
+# Python does NOT have strict access control like Java/C++
+# Instead it uses NAMING CONVENTIONS to signal access level
+
+# TYPE         SYNTAX     ACCESS
+# Public       var        anywhere — inside class, outside, child class
+# Protected    _var       inside class + child class (convention only)
+# Private      __var      only inside class (name mangling applied)
+
+
+# ============================================================
+# 1. PUBLIC
+# ============================================================
+
+# Default — no prefix
+# Accessible everywhere without any restriction
+
+class PublicExample:
     def __init__(self):
-        self.name = "Public Member"       # public
-        self._age = 21                    # protected
-        self.__salary = 50000             # private
+        self.name = "Rahul"       # public attribute
 
+    def show(self):               # public method
+        print(f"Name: {self.name}")
+
+obj = PublicExample()
+print(obj.name)    # ✅ works — accessed from outside
+obj.show()         # ✅ works — called from outside
+
+
+# ============================================================
+# 2. PROTECTED
+# ============================================================
+
+# Single underscore prefix → _variable
+# Python does NOT enforce restriction — just a convention
+# Meaning: "this is for internal use, don't access from outside"
+# Child classes CAN access (main use case)
+
+class ProtectedExample:
+    def __init__(self):
+        self._age = 21            # protected attribute
+
+    def _display(self):           # protected method
+        print(f"Age: {self._age}")
+
+obj = ProtectedExample()
+print(obj._age)       # ⚠️  works but NOT recommended
+obj._display()        # ⚠️  works but NOT recommended
+
+# Correct use — access in child class:
+class Child(ProtectedExample):
     def show(self):
-        print(self.name)       # accessible inside class ✅
-        print(self._age)       # accessible inside class ✅
-        print(self.__salary)   # accessible inside class ✅
+        print(self._age)          # ✅ acceptable in child class
 
-d = Demo()
-d.show()              # works — accessing via method (correct way)
-print(d.name)         # works — public
-print(d._age)         # works — but convention says don't
-# print(d.__salary)   # AttributeError — private!
-print(d._Demo__salary) # works — name mangling bypass (not recommended)
+c = Child()
+c.show()              # ✅ works correctly
+
+
+# ============================================================
+# 3. PRIVATE
+# ============================================================
+
+# Double underscore prefix → __variable
+# Python applies NAME MANGLING internally
+# __salary → becomes → _ClassName__salary
+# Direct access from outside → AttributeError
+
+class PrivateExample:
+    def __init__(self):
+        self.__salary = 50000     # private attribute
+
+    def __secret(self):           # private method
+        print("This is a secret method")
+
+    def access_private(self):     # public method to safely expose private
+        print(f"Salary: {self.__salary}")
+        self.__secret()
+
+obj = PrivateExample()
+
+# ❌ These will FAIL:
+# print(obj.__salary)   → AttributeError
+# obj.__secret()        → AttributeError
+
+# ✅ These work:
+obj.access_private()                  # via public method (correct way)
+print(obj._PrivateExample__salary)    # via name mangling (NOT recommended)
+
+
+# ============================================================
+# NAME MANGLING — HOW AND WHY
+# ============================================================
+
+# When Python sees __variable inside a class:
+# It RENAMES it internally to: _ClassName__variable
+
+# WHY Python does this:
+# Avoids accidental override in child classes
+# Provides data hiding (not strict security — just protection)
+
+# Example:
+class Factory:
+    __city = "Pune"               # becomes _Factory__city internally
+
+# Access from outside:
+f = Factory()
+# print(f.__city)                 # ❌ AttributeError
+print(f._Factory__city)           # ✅ works via name mangling (not recommended)
+
+
+# ============================================================
+# PRIVATE VARIABLES + INHERITANCE PROBLEM
+# ============================================================
+
+# Private variables are NAME MANGLED to _ClassName__var
+# So child class CANNOT directly access parent's private variable
+
+class Factory:
+    __city = "Pune"               # internally → _Factory__city
+
+class Bhopal(Factory):
+    def show(self):
+        # print(self.__city)      # ❌ looks for _Bhopal__city → NOT FOUND
+        pass
+
+b = Bhopal()
+b.show()
+
+# WHY it fails:
+# Inside Bhopal → self.__city → Python looks for _Bhopal__city
+# But actual variable is → _Factory__city
+# Different names → AttributeError
+
+
+# ============================================================
+# WHY super().__var ALSO FAILS
+# ============================================================
+
+class Bhopal(Factory):
+    def show(self):
+        # print(super().__city)   # ❌ also fails
+        pass
+
+# Reason:
+# super().__city → Python still applies name mangling
+# Still looks for _Bhopal__city (based on where code is written)
+# NOT _Factory__city
+# Name mangling is based on CLASS WHERE CODE IS WRITTEN
+# NOT based on runtime class
+
+
+# ============================================================
+# CORRECT WAYS TO ACCESS PRIVATE IN CHILD
+# ============================================================
+
+# WAY 1: Name mangling bypass (works but NOT recommended)
+class Bhopal(Factory):
+    def show(self):
+        print(super()._Factory__city)    # ✅ works but breaks encapsulation
+
+# WAY 2: Getter method (BEST PRACTICE ✅)
+class Factory:
+    __city = "Pune"
+
+    def get_city(self):               # public method to expose private data
+        return self.__city
+
+class Bhopal(Factory):
+    def show(self):
+        print(super().get_city())     # ✅ clean, safe, proper encapsulation
+
+b = Bhopal()
+b.show()                              # Pune
+
+# Why Way 2 is best:
+# Encapsulation maintained
+# Safe and readable
+# Industry standard approach
+
+
+# ============================================================
+# _ vs __ — KEY DIFFERENCE
+# ============================================================
+
+class A:
+    _x = 10       # protected — accessible in child
+    __y = 20      # private — name mangled
+
+class B(A):
+    def test(self):
+        print(self._x)        # ✅ works — protected accessible in child
+        # print(self.__y)     # ❌ error — looks for _B__y not _A__y
+
+b = B()
+b.test()
+
+
+# ============================================================
+# COMPLETE DEMO CLASS — ALL 3 TOGETHER
+# ============================================================
+
+class Employee:
+    company = "TechCorp"              # class attribute (public)
+
+    def __init__(self, name, age, salary):
+        self.name = name              # public
+        self._age = age               # protected
+        self.__salary = salary        # private
+
+    # public method — anyone can call
+    def display(self):
+        print(f"Name   : {self.name}")
+        print(f"Age    : {self._age}")
+        print(f"Salary : {self.__salary}")
+
+    # getter — controlled read access to private
+    def get_salary(self):
+        return self.__salary
+
+    # setter — controlled write access with validation
+    def set_salary(self, amount):
+        if amount < 0:
+            print("❌ Salary cannot be negative!")
+        else:
+            self.__salary = amount
+            print("✅ Salary updated!")
+
+    # private method — only used internally
+    def __calculate_bonus(self):
+        return self.__salary * 0.10
+
+    # public method that uses private method internally
+    def show_bonus(self):
+        bonus = self.__calculate_bonus()
+        print(f"Bonus: {bonus}")
+
+
+emp = Employee("Akarsh", 25, 50000)
+
+# Public access:
+print(emp.name)             # ✅ Akarsh
+print(emp.company)          # ✅ TechCorp
+
+# Protected access (not recommended from outside):
+print(emp._age)             # ⚠️  25 (works but avoid)
+
+# Private access — only through methods:
+# print(emp.__salary)       # ❌ AttributeError
+print(emp.get_salary())     # ✅ 50000 (via getter)
+emp.set_salary(60000)       # ✅ update via setter
+emp.set_salary(-100)        # ❌ validation catches this
+
+# Private method access:
+# emp.__calculate_bonus()   # ❌ AttributeError
+emp.show_bonus()            # ✅ via public method
+
+# Full display:
+emp.display()
+
+
+# ============================================================
+# SUMMARY TABLE
+# ============================================================
+
+#  Type       Syntax    Accessible From              Convention
+#  ---------------------------------------------------------------
+#  Public     var       Anywhere                     No restriction
+#  Protected  _var      Class + Child (convention)   Internal use
+#  Private    __var     Only inside class            Data hiding
+#  ---------------------------------------------------------------
+
+# ATTRIBUTE = variable inside class  (self.name)
+# METHOD    = function inside class  (def show(self):)
+
+
+# ============================================================
+# INTERVIEW QUICK FIRE
+# ============================================================
+
+# Q: What is encapsulation?
+# A: Bundling data + methods in one class + hiding internal details
+
+# Q: Does Python have strict private access?
+# A: No — uses naming convention + name mangling, not strict enforcement
+
+# Q: What is name mangling?
+# A: __var becomes _ClassName__var internally
+#    Prevents accidental access/override in child classes
+
+# Q: Can child class access parent's private variable?
+# A: Not directly — use getter methods (best practice)
+
+# Q: Why does super().__var fail in child?
+# A: Name mangling is applied based on class where code is WRITTEN
+#    super().__var in Bhopal → looks for _Bhopal__var, not _Factory__var
+
+# Q: Difference between _var and __var?
+# A: _var  → protected (accessible, just convention to avoid)
+#    __var → private (name mangled, truly restricted)
+
+# Q: What is a getter and setter?
+# A: Getter → public method to READ private data (get_salary)
+#    Setter → public method to WRITE private data with validation (set_salary)
+
+
+# ============================================================
+# ONE LINE CONCEPTS
+# ============================================================
+
+# Public   = open to all
+# Protected = internal use (child ok, outsider avoid)
+# Private  = name mangled, only inside class, use methods to access
+# Name mangling = __var → _ClassName__var (Python's way of hiding)
+# super().__var fails because mangling uses class where code is written
+# Best practice = always use getter/setter for private variables
+
+
+
+
 
 
 # ===== ABSTRACTION =====
@@ -2844,6 +3156,425 @@ d.make_sound()   # "Dog says Woof!"
 # Forces subclasses to implement required methods
 # Creates a "contract" — all subclasses must follow the same interface
 # Used heavily in frameworks and APIs
+
+
+
+
+# Abstraction = HIDING complexity, SHOWING only essentials
+# Focus on WHAT to do — not HOW to do it
+
+# Two parts:
+# 1. HIDE   → internal implementation details
+# 2. SHOW   → only the interface (method names)
+
+# Real World Examples:
+# TV Remote   → you press volume up (what) 
+#               you don't know internal circuit (how) ✅
+# Car         → you press accelerator (what)
+#               you don't know engine combustion (how) ✅
+# ATM         → you withdraw money (what)
+#               you don't know bank server logic (how) ✅
+
+
+# ============================================================
+# ABSTRACTION vs ENCAPSULATION — KEY DIFFERENCE
+# ============================================================
+
+# Encapsulation → HIDING data (using private/protected)
+# Abstraction   → HIDING implementation (using abstract methods)
+
+# Encapsulation = HOW you protect data
+# Abstraction   = HOW you design structure/interface
+
+# Example:
+# Encapsulation → self.__salary (hide the variable)
+# Abstraction   → def calculate_salary(): pass (define what must exist)
+
+
+# ============================================================
+# HOW ABSTRACTION WORKS IN PYTHON
+# ============================================================
+
+# Python does NOT have built-in abstract keyword like Java
+# We achieve abstraction using:
+# ABC module → Abstract Base Class
+# @abstractmethod decorator → marks method as abstract
+
+# RULE:
+# Abstract class  → class that has ONE or more abstract methods
+# Abstract method → method defined but NOT implemented (just pass)
+# Subclass        → MUST implement all abstract methods
+# Cannot create object of abstract class directly → TypeError
+
+
+# ============================================================
+# IMPORT
+# ============================================================
+
+from abc import ABC, abstractmethod
+# ABC           → parent class for all abstract classes
+# abstractmethod → decorator to mark a method as abstract
+
+
+# ============================================================
+# BASIC SYNTAX
+# ============================================================
+
+class Animal(ABC):            # inherit from ABC → makes it abstract
+
+    @abstractmethod           # this method MUST be overridden in child
+    def sound(self):
+        pass                  # no implementation here — just declaration
+
+    @abstractmethod
+    def move(self):
+        pass
+
+# ❌ Cannot create object of abstract class:
+# a = Animal()   → TypeError: Can't instantiate abstract class
+
+# ✅ Child MUST implement all abstract methods:
+class Dog(Animal):
+    def sound(self):          # implementing abstract method
+        print("Dog says: Woof!")
+
+    def move(self):
+        print("Dog runs on 4 legs")
+
+class Bird(Animal):
+    def sound(self):
+        print("Bird says: Tweet!")
+
+    def move(self):
+        print("Bird flies with wings")
+
+# Now we can create objects:
+d = Dog()
+d.sound()     # Dog says: Woof!
+d.move()      # Dog runs on 4 legs
+
+b = Bird()
+b.sound()     # Bird says: Tweet!
+b.move()      # Bird flies with wings
+
+
+# ============================================================
+# WHAT HAPPENS IF CHILD DOESN'T IMPLEMENT?
+# ============================================================
+
+class Cat(Animal):
+    def sound(self):
+        print("Meow!")
+    # ❌ forgot to implement move()
+
+# c = Cat()   → TypeError!
+# TypeError: Can't instantiate abstract class Cat
+# with abstract method move
+
+# Python FORCES all abstract methods to be implemented
+# This is the POWER of abstraction — it creates a contract
+
+
+# ============================================================
+# ABSTRACT CLASS CAN HAVE CONCRETE METHODS TOO
+# ============================================================
+
+# Abstract class = mix of:
+# Abstract methods  → must be overridden (no body)
+# Concrete methods  → already implemented (inherited as is)
+
+class Shape(ABC):
+
+    @abstractmethod
+    def area(self):           # abstract — child must implement
+        pass
+
+    @abstractmethod
+    def perimeter(self):      # abstract — child must implement
+        pass
+
+    def describe(self):       # concrete — child gets this for free
+        print(f"I am a {self.__class__.__name__}")
+        print(f"Area      : {self.area():.2f}")
+        print(f"Perimeter : {self.perimeter():.2f}")
+
+
+import math
+
+class Circle(Shape):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def area(self):
+        return math.pi * self.radius ** 2
+
+    def perimeter(self):
+        return 2 * math.pi * self.radius
+
+
+class Rectangle(Shape):
+    def __init__(self, length, width):
+        self.length = length
+        self.width = width
+
+    def area(self):
+        return self.length * self.width
+
+    def perimeter(self):
+        return 2 * (self.length + self.width)
+
+
+class Triangle(Shape):
+    def __init__(self, a, b, c):
+        self.a = a
+        self.b = b
+        self.c = c
+
+    def area(self):
+        # Heron's formula
+        s = (self.a + self.b + self.c) / 2
+        return math.sqrt(s * (s-self.a) * (s-self.b) * (s-self.c))
+
+    def perimeter(self):
+        return self.a + self.b + self.c
+
+
+# Testing:
+shapes = [Circle(5), Rectangle(4, 6), Triangle(3, 4, 5)]
+
+for shape in shapes:
+    shape.describe()     # concrete method — same for all
+    print()
+
+# OUTPUT:
+# I am a Circle
+# Area      : 78.54
+# Perimeter : 31.42
+#
+# I am a Rectangle
+# Area      : 24.00
+# Perimeter : 20.00
+#
+# I am a Triangle
+# Area      : 6.00
+# Perimeter : 12.00
+
+
+# ============================================================
+# REAL WORLD PROJECT EXAMPLE — Payment System
+# ============================================================
+
+# Scenario:
+# You are building a payment system
+# Payments can be: CreditCard, UPI, NetBanking
+# Each payment type has different logic
+# BUT every payment MUST have: validate() and pay()
+# Abstraction enforces this contract
+
+class Payment(ABC):
+
+    def __init__(self, amount):
+        self.amount = amount
+
+    @abstractmethod
+    def validate(self):       # every payment must validate
+        pass
+
+    @abstractmethod
+    def pay(self):            # every payment must process
+        pass
+
+    def receipt(self):        # concrete — same receipt for all
+        print(f"✅ Payment of ₹{self.amount} processed successfully!")
+        print(f"   Method: {self.__class__.__name__}")
+
+
+class CreditCard(Payment):
+    def __init__(self, amount, card_number):
+        super().__init__(amount)
+        self.card_number = card_number
+
+    def validate(self):
+        if len(str(self.card_number)) == 16:
+            print("✅ Credit Card validated!")
+            return True
+        print("❌ Invalid card number!")
+        return False
+
+    def pay(self):
+        if self.validate():
+            print(f"💳 Paying ₹{self.amount} via Credit Card")
+            self.receipt()
+
+
+class UPI(Payment):
+    def __init__(self, amount, upi_id):
+        super().__init__(amount)
+        self.upi_id = upi_id
+
+    def validate(self):
+        if "@" in self.upi_id:
+            print("✅ UPI ID validated!")
+            return True
+        print("❌ Invalid UPI ID!")
+        return False
+
+    def pay(self):
+        if self.validate():
+            print(f"📱 Paying ₹{self.amount} via UPI: {self.upi_id}")
+            self.receipt()
+
+
+class NetBanking(Payment):
+    def __init__(self, amount, account_no):
+        super().__init__(amount)
+        self.account_no = account_no
+
+    def validate(self):
+        if len(str(self.account_no)) >= 9:
+            print("✅ Account number validated!")
+            return True
+        print("❌ Invalid account number!")
+        return False
+
+    def pay(self):
+        if self.validate():
+            print(f"🏦 Paying ₹{self.amount} via Net Banking")
+            self.receipt()
+
+
+# Testing:
+print("=" * 40)
+payments = [
+    CreditCard(1500, 1234567890123456),
+    UPI(500, "akarsh@upi"),
+    NetBanking(2000, 123456789)
+]
+
+for payment in payments:
+    payment.pay()
+    print()
+
+# OUTPUT:
+# ✅ Credit Card validated!
+# 💳 Paying ₹1500 via Credit Card
+# ✅ Payment of ₹1500 processed successfully!
+#    Method: CreditCard
+#
+# ✅ UPI ID validated!
+# 📱 Paying ₹500 via UPI: akarsh@upi
+# ✅ Payment of ₹500 processed successfully!
+#    Method: UPI
+#
+# ✅ Account number validated!
+# 🏦 Paying ₹2000 via Net Banking
+# ✅ Payment of ₹2000 processed successfully!
+#    Method: NetBanking
+
+
+# ============================================================
+# ABSTRACT PROPERTY
+# ============================================================
+
+# You can also make PROPERTIES abstract (not just methods)
+
+class Vehicle(ABC):
+
+    @property
+    @abstractmethod
+    def fuel_type(self):      # abstract property
+        pass
+
+    @abstractmethod
+    def start(self):
+        pass
+
+
+class Car(Vehicle):
+    @property
+    def fuel_type(self):      # must implement abstract property
+        return "Petrol"
+
+    def start(self):
+        print(f"Car starting on {self.fuel_type}")
+
+
+class ElectricCar(Vehicle):
+    @property
+    def fuel_type(self):
+        return "Electric"
+
+    def start(self):
+        print(f"Electric car starting on {self.fuel_type}")
+
+
+c1 = Car()
+c1.start()           # Car starting on Petrol
+
+c2 = ElectricCar()
+c2.start()           # Electric car starting on Electric
+
+
+# ============================================================
+# IMPORTANT RULES — QUICK REFERENCE
+# ============================================================
+
+# RULE 1:
+# Abstract class → inherits from ABC
+# class MyClass(ABC):
+
+# RULE 2:
+# Abstract method → decorated with @abstractmethod
+# has no body (just pass)
+
+# RULE 3:
+# Cannot create object of abstract class
+# Animal()  → TypeError
+
+# RULE 4:
+# Child MUST implement ALL abstract methods
+# If even one is missing → TypeError on object creation
+
+# RULE 5:
+# Abstract class CAN have:
+# → abstract methods (must override)
+# → concrete methods (inherited as is)
+# → __init__ constructor
+# → class attributes
+
+# RULE 6:
+# Abstract method CAN have a body (optional)
+# Child can call it using super()
+# But child STILL must override it
+
+
+# ============================================================
+# ABSTRACTION vs ENCAPSULATION — SIDE BY SIDE
+# ============================================================
+
+#  Feature        Abstraction              Encapsulation
+#  ----------------------------------------------------------
+#  Focus          Hiding implementation    Hiding data
+#  Tool           ABC + abstractmethod     Private/Protected
+#  Purpose        Define interface/contract Protect internal state
+#  Example        def area(): pass         self.__salary
+#  Level          Design level             Implementation level
+#  ----------------------------------------------------------
+
+
+# ============================================================
+# SUMMARY — ONE LINERS
+# ============================================================
+
+# Abstraction  = hide HOW, show WHAT
+# ABC          = base class for all abstract classes
+# @abstractmethod = method that child MUST implement
+# Abstract class = cannot be instantiated directly
+# Concrete method in abstract class = inherited by all children
+# Abstraction creates a CONTRACT that all subclasses must follow
+
+
+
 
 
 # ===== DUNDER (MAGIC) METHODS =====
