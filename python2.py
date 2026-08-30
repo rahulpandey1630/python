@@ -99,22 +99,28 @@ x = "hello"   # now x is string — Python allows this (dynamic)
 # Rule 1: Cannot start with a number
 # 2name = "bad"    ← ERROR
 
+
 # Rule 2: No spaces allowed
 # my name = "bad"  ← ERROR
+
 
 # Rule 3: No special characters except underscore (_)
 # my-name = "bad"  ← ERROR
 # my@name = "bad"  ← ERROR
 
+
 # Rule 4: Cannot use Python reserved keywords
 # if = 5    ← ERROR (if is a keyword)
 # for = 5   ← ERROR
+
+
 
 # Rule 5: Case sensitive
 # name = "Alice"
 # Name = "Bob"
 # NAME = "Charlie"
 # All three above are DIFFERENT variables
+
 
 # VALID VARIABLE EXAMPLES:
 my_name = "Akarsh"
